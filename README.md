@@ -34,7 +34,7 @@ An object used for collecting and reporting information about code operations - 
             foreach (var fileInfo in files)
             {
                 StatusMessage readStatus = new StatusMessage(true);
-                readStatus.ObjectName = "GetLocalFilesInfo";
+                readStatus.RunningFunctionName = "GetLocalFilesInfo";
                 try
                 {
                     FilesList.Add(fileInfo);
