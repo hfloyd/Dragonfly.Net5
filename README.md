@@ -56,7 +56,7 @@ An object used for collecting and reporting information about code operations - 
 Allows you to use familiar HttpResponse syntax from .Net Framework to return an IActionResult.
 
 
-*Example *
+*Example*
 
         [HttpGet]
         public IActionResult DoSomethings()
@@ -112,7 +112,7 @@ Renders an MVC View to a HTML string.
     services.AddControllersWithViews();
     services.AddRazorPages();
 
-*Example: Usage (in a Controller) *
+*Example: Usage (in a Controller)*
 
 	public class MyController : Controller
     {
