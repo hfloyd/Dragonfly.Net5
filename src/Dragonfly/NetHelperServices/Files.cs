@@ -1,4 +1,4 @@
-﻿namespace Dragonfly.NetHelpers
+﻿namespace Dragonfly.NetHelperServices
 {
     using System;
     using System.Collections.Generic;
@@ -7,17 +7,31 @@
     using System.Net;
     using System.Text;
     using System.Threading;
-    //using System.Web;
-    //using System.Web.Hosting;
     using Dragonfly.NetModels;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore;
 
     /// <summary>
     /// Helpers to handle File I/O
     /// </summary>
-    public static class Files
+    public static class FileHelperService
     {
 
-        private const string ThisClassName = "Dragonfly.NetHelpers.Files";
+        private const string ThisClassName = "Dragonfly.NetHelperServices.FileHelperService";
+ private readonly IWebHostEnvironment _webHostEnvironment;
+
+        public FileHelperService(IWebHostEnvironment webHostEnvironment)
+        {
+            _webHostEnvironment = webHostEnvironment;
+        }
+
+        //private IHtmlContent Source(this IHtmlHelper html, string s)
+        //{
+        //    string contentRootPath = _webHostEnvironment.ContentRootPath;
+        //    Path.Combine(contentRootPath, "Views", s)
+        //}
+    }
+
 
         #region Retrieve Remote Files (HTTP)
 
@@ -445,7 +459,7 @@
             {
                 if (CreateDirectoryIfMissing)
                 {
-                    string directoryName = Path.GetDirectoryName(Files.GetMappedPath(FilePath));
+                    string directoryName = Path.GetDirectoryName(FileHelperService.GetMappedPath(FilePath));
 
                     if (Directory.Exists(directoryName) == false)
                     {
@@ -534,7 +548,7 @@
 
         public static IEnumerable<string> ListLocalFiles(string FolderPath)
         {
-            var mappedPath = Files.GetMappedPath(FolderPath);
+            var mappedPath = FileHelperService.GetMappedPath(FolderPath);
             var files = System.IO.Directory.EnumerateFiles(mappedPath);
 
             return files;
@@ -547,7 +561,7 @@
         /// <returns></returns>
         public static string GetTextFileContents(string FilePath)
         {
-            var mappedFilePath = Files.GetMappedPath(FilePath);
+            var mappedFilePath = FileHelperService.GetMappedPath(FilePath);
 
             string readText = File.ReadAllText(mappedFilePath);
 

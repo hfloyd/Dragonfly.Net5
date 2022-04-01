@@ -43,7 +43,7 @@
 
             return bolResult;
         }
-        
+
 
         /// <summary>
         /// Tests whether a string contains any of the separate values specified in  a delimited string list
@@ -295,8 +295,8 @@
         }
 
 
-       [Obsolete("Use identical string extension function 'ContainsValueFromList()'")]       
-       public static bool StringContainsValueFromList(string StringToTest, string DelimitedListOfTestValues, char DelimChar, bool CaseSensitive = false)
+        [Obsolete("Use identical string extension function 'ContainsValueFromList()'")]
+        public static bool StringContainsValueFromList(string StringToTest, string DelimitedListOfTestValues, char DelimChar, bool CaseSensitive = false)
         {
             return StringToTest.ContainsValueFromList(DelimitedListOfTestValues, DelimChar, CaseSensitive);
 
@@ -317,7 +317,13 @@
 
         #region Altering String Values
 
-        public static string ReplaceBadChars(string StringToFix, string WordSeparator = "-")
+        /// <summary>
+        /// Replaces various special characters in a string
+        /// </summary>
+        /// <param name="StringToFix"></param>
+        /// <param name="WordSeparator">Replace spaces, etc with this</param>
+        /// <returns></returns>
+        public static string ReplaceBadChars(this string StringToFix, string WordSeparator = "-")
         {
             string NewString = StringToFix;
 
@@ -356,6 +362,12 @@
             return NewString;
         }
 
+        /// <summary>
+        /// Swap out a bunch of values with replacements via Dictionary (Good for "merge"-type operations)
+        /// </summary>
+        /// <param name="OriginalString"></param>
+        /// <param name="ReplacementsDictionary"></param>
+        /// <returns></returns>
         public static string ReplaceMultiple(this string OriginalString, Dictionary<string, string> ReplacementsDictionary)
         {
             var finalString = OriginalString;
@@ -368,127 +380,147 @@
             return finalString;
         }
 
+        /// <summary>
+        /// Clean up a string so it is safe to use as a code name
+        /// </summary>
+        /// <param name="StringToFix"></param>
+        /// <param name="WordSeparator"></param>
+        /// <param name="ConvertNumbersToWords"></param>
+        /// <returns></returns>
         public static string MakeCodeSafe(this string StringToFix, string WordSeparator = "-", bool ConvertNumbersToWords = false)
         {
-            string NewString = StringToFix;
+            string newString = StringToFix;
 
             if (ConvertNumbersToWords)
             {
-                NewString = NumeralsToWords(NewString);
+                newString = NumeralsToWords(newString);
             }
 
-            NewString = ReplaceBadChars(NewString, WordSeparator);
+            newString = ReplaceBadChars(newString, WordSeparator);
 
-            NewString = NewString.Replace(" ", "");
+            newString = newString.Replace(" ", "");
 
             if (WordSeparator != "")
             {
-                string SeparatorDoubled = String.Concat(WordSeparator, WordSeparator);
-                bool DupedSeparator = NewString.Contains(SeparatorDoubled);
+                string separatorDoubled = string.Concat(WordSeparator, WordSeparator);
+                bool dupedSeparator = newString.Contains(separatorDoubled);
                 do
                 {
-                    NewString = NewString.Replace(SeparatorDoubled, WordSeparator);
-                    DupedSeparator = NewString.Contains(SeparatorDoubled);
+                    newString = newString.Replace(separatorDoubled, WordSeparator);
+                    dupedSeparator = newString.Contains(separatorDoubled);
 
-                } while (DupedSeparator);
+                } while (dupedSeparator);
             }
 
-            return NewString;
+            return newString;
         }
 
+        /// <summary>
+        /// Replace various numeric values with text versions. Handles fractions and single-digits (ex:"1/2"="Half", "23" = "TwoThree")
+        /// </summary>
+        /// <param name="StringToFix"></param>
+        /// <param name="DoComplexReplacements">Convert fractions as fraction text (if false, will treat fractions like single digits)</param>
+        /// <param name="Capitalize">Return as Pascal-Cased (false will return all lowercase)</param>
+        /// <returns></returns>
         public static string NumeralsToWords(this string StringToFix, bool DoComplexReplacements = true, bool Capitalize = true)
         {
-            string NewString = StringToFix;
+            string newString = StringToFix;
 
             if (DoComplexReplacements)
             {
-                NewString = NewString.Replace("1/2", "Half");
-                NewString = NewString.Replace("1/3", "OneThird");
-                NewString = NewString.Replace("2/3", "TwoThirds");
-                NewString = NewString.Replace("1/4", "OneFourth");
-                NewString = NewString.Replace("3/4", "ThreeFourths");
-                NewString = NewString.Replace("1/5", "OneFifth");
-                NewString = NewString.Replace("2/5", "TwoFifths");
-                NewString = NewString.Replace("3/5", "ThreeFifths");
-                NewString = NewString.Replace("4/5", "FourFifths");
-                NewString = NewString.Replace("1/6", "OneSixth");
-                NewString = NewString.Replace("5/6", "FiveSixths");
-                NewString = NewString.Replace("1/7", "OneSeventh");
-                NewString = NewString.Replace("2/7", "TwoSevenths");
-                NewString = NewString.Replace("3/7", "ThreeSevenths");
-                NewString = NewString.Replace("4/7", "FourSevenths");
-                NewString = NewString.Replace("5/7", "FiveSevenths");
-                NewString = NewString.Replace("6/7", "SixSevenths");
-                NewString = NewString.Replace("1/8", "OneEighth");
-                NewString = NewString.Replace("3/8", "ThreeEighths");
-                NewString = NewString.Replace("5/8", "FiveEighths");
-                NewString = NewString.Replace("7/8", "Eighths");
-                NewString = NewString.Replace("1/9", "OneNinth");
-                NewString = NewString.Replace("2/9", "TwoNinths");
-                NewString = NewString.Replace("4/9", "FourNinths");
-                NewString = NewString.Replace("5/9", "FiveNinths");
-                NewString = NewString.Replace("7/9", "SevenNinths");
-                NewString = NewString.Replace("8/9", "EightNinths");
-                NewString = NewString.Replace("1/10", "OneTenth");
-                NewString = NewString.Replace("2/10", "TwoTenths");
-                NewString = NewString.Replace("3/10", "ThreeTenths");
-                NewString = NewString.Replace("4/10", "FourTenths");
-                NewString = NewString.Replace("6/10", "SixTenths");
-                NewString = NewString.Replace("7/10", "SevenTenths");
-                NewString = NewString.Replace("8/10", "EightTenths");
-                NewString = NewString.Replace("9/10", "NineTenths");
-                NewString = NewString.Replace("1/11", "OneEleventh");
-                NewString = NewString.Replace("2/11", "TwoElevenths");
-                NewString = NewString.Replace("3/11", "ThreeElevenths");
-                NewString = NewString.Replace("4/11", "FourElevenths");
-                NewString = NewString.Replace("5/11", "FiveElevenths");
-                NewString = NewString.Replace("6/11", "SixElevenths");
-                NewString = NewString.Replace("7/11", "SevenElevenths");
-                NewString = NewString.Replace("8/11", "EightElevenths");
-                NewString = NewString.Replace("9/11", "NineElevenths");
-                NewString = NewString.Replace("10/11", "TenElevenths");
-                NewString = NewString.Replace("1/12", "OneTwelfth");
-                NewString = NewString.Replace("5/12", "FiveTwelfths");
-                NewString = NewString.Replace("7/12", "SevenTwelfths");
-                NewString = NewString.Replace("11/12", "ElevenTwelfths");
+                newString = newString.Replace("1/2", "Half");
+                newString = newString.Replace("1/3", "OneThird");
+                newString = newString.Replace("2/3", "TwoThirds");
+                newString = newString.Replace("1/4", "OneFourth");
+                newString = newString.Replace("3/4", "ThreeFourths");
+                newString = newString.Replace("1/5", "OneFifth");
+                newString = newString.Replace("2/5", "TwoFifths");
+                newString = newString.Replace("3/5", "ThreeFifths");
+                newString = newString.Replace("4/5", "FourFifths");
+                newString = newString.Replace("1/6", "OneSixth");
+                newString = newString.Replace("5/6", "FiveSixths");
+                newString = newString.Replace("1/7", "OneSeventh");
+                newString = newString.Replace("2/7", "TwoSevenths");
+                newString = newString.Replace("3/7", "ThreeSevenths");
+                newString = newString.Replace("4/7", "FourSevenths");
+                newString = newString.Replace("5/7", "FiveSevenths");
+                newString = newString.Replace("6/7", "SixSevenths");
+                newString = newString.Replace("1/8", "OneEighth");
+                newString = newString.Replace("3/8", "ThreeEighths");
+                newString = newString.Replace("5/8", "FiveEighths");
+                newString = newString.Replace("7/8", "Eighths");
+                newString = newString.Replace("1/9", "OneNinth");
+                newString = newString.Replace("2/9", "TwoNinths");
+                newString = newString.Replace("4/9", "FourNinths");
+                newString = newString.Replace("5/9", "FiveNinths");
+                newString = newString.Replace("7/9", "SevenNinths");
+                newString = newString.Replace("8/9", "EightNinths");
+                newString = newString.Replace("1/10", "OneTenth");
+                newString = newString.Replace("2/10", "TwoTenths");
+                newString = newString.Replace("3/10", "ThreeTenths");
+                newString = newString.Replace("4/10", "FourTenths");
+                newString = newString.Replace("6/10", "SixTenths");
+                newString = newString.Replace("7/10", "SevenTenths");
+                newString = newString.Replace("8/10", "EightTenths");
+                newString = newString.Replace("9/10", "NineTenths");
+                newString = newString.Replace("1/11", "OneEleventh");
+                newString = newString.Replace("2/11", "TwoElevenths");
+                newString = newString.Replace("3/11", "ThreeElevenths");
+                newString = newString.Replace("4/11", "FourElevenths");
+                newString = newString.Replace("5/11", "FiveElevenths");
+                newString = newString.Replace("6/11", "SixElevenths");
+                newString = newString.Replace("7/11", "SevenElevenths");
+                newString = newString.Replace("8/11", "EightElevenths");
+                newString = newString.Replace("9/11", "NineElevenths");
+                newString = newString.Replace("10/11", "TenElevenths");
+                newString = newString.Replace("1/12", "OneTwelfth");
+                newString = newString.Replace("5/12", "FiveTwelfths");
+                newString = newString.Replace("7/12", "SevenTwelfths");
+                newString = newString.Replace("11/12", "ElevenTwelfths");
             }
 
 
-            NewString = NewString.Replace("0", "Zero");
-            NewString = NewString.Replace("1", "One");
-            NewString = NewString.Replace("2", "Two");
-            NewString = NewString.Replace("3", "Three");
-            NewString = NewString.Replace("4", "Four");
-            NewString = NewString.Replace("5", "Five");
-            NewString = NewString.Replace("6", "Six");
-            NewString = NewString.Replace("7", "Seven");
-            NewString = NewString.Replace("8", "Eight");
-            NewString = NewString.Replace("9", "Nine");
+            newString = newString.Replace("0", "Zero");
+            newString = newString.Replace("1", "One");
+            newString = newString.Replace("2", "Two");
+            newString = newString.Replace("3", "Three");
+            newString = newString.Replace("4", "Four");
+            newString = newString.Replace("5", "Five");
+            newString = newString.Replace("6", "Six");
+            newString = newString.Replace("7", "Seven");
+            newString = newString.Replace("8", "Eight");
+            newString = newString.Replace("9", "Nine");
 
             if (!Capitalize)
             {
-                NewString = NewString.ToLower();
+                newString = newString.ToLower();
             }
 
-            return NewString;
+            return newString;
         }
 
+        /// <summary>
+        /// Splits a Camel or Pascal Cased string into separate words
+        /// </summary>
+        /// <param name="StringToConvert"></param>
+        /// <param name="SplitCharacters">Characters to use for the separator (default is space)</param>
+        /// <returns></returns>
         public static string SplitCamelCase(this string StringToConvert, string SplitCharacters = " ")
         {
-            String NewString = "";
+            string newString = "";
 
-            //NewString = System.Text.RegularExpressions.Regex.Replace(StringToConvert, "([A-Z])", " $1", System.Text.RegularExpressions.RegexOptions.Compiled).Trim();
+            //newString = System.Text.RegularExpressions.Regex.Replace(StringToConvert, "([A-Z])", " $1", System.Text.RegularExpressions.RegexOptions.Compiled).Trim();
 
-            NewString = Regex.Replace(StringToConvert, @"(?<a>(?<!^)[A-Z][a-z])", @" ${a}");
-            NewString = Regex.Replace(NewString, @"(?<a>[a-z])(?<b>[A-Z0-9])", @"${a} ${b}");
+            newString = Regex.Replace(StringToConvert, @"(?<a>(?<!^)[A-Z][a-z])", @" ${a}");
+            newString = Regex.Replace(newString, @"(?<a>[a-z])(?<b>[A-Z0-9])", @"${a} ${b}");
 
 
             if (SplitCharacters != " ")
             {
-                NewString = NewString.Replace(" ", SplitCharacters);
+                newString = newString.Replace(" ", SplitCharacters);
             }
 
-            return NewString;
+            return newString;
         }
 
         /// <summary>
@@ -516,67 +548,6 @@
             }
 
             return templ.ToString();
-        }
-
-        /// <summary>
-        /// Add an absolute path to all the img tags in the html of a passed-in string.
-        /// </summary>
-        /// <param name="html"></param>
-        /// <returns></returns>
-        public static string AddImgAbsolutePath(this string HtmlString, Uri CurrentRequestUri)
-        {
-            HtmlDocument doc = new HtmlDocument();
-            doc.LoadHtml(HtmlString);
-
-            var uri = CurrentRequestUri;//new Uri(HttpContext.Current.Request.Url.AbsoluteUri);
-            var domainUrl = string.Format("{0}://{1}", uri.Scheme, uri.Authority);
-
-            if (doc.DocumentNode.SelectNodes("//img[@src]") != null)
-            {
-                foreach (HtmlNode img in doc.DocumentNode.SelectNodes("//img[@src]"))
-                {
-                    HtmlAttribute att = img.Attributes["src"];
-                    if (att.Value.StartsWith("/"))
-                    {
-                        att.Value = domainUrl + att.Value;
-                    }
-                }
-            }
-
-            return doc.DocumentNode.InnerHtml;
-        }
-
-        /// <summary>
-        /// Searches for Urls in a string and replaces them with full a href tags
-        /// </summary>
-        /// <param name="HtmlString">String to search and replace in</param>
-        /// <param name="Target">Target for links (default = '_blank' (new window))</param>
-        /// <returns></returns>
-        public static string EnableHtmlLinks(this string HtmlString, string Target = "_blank")
-        {
-            var fixedHtml = HtmlString;
-
-            var urlRegEx = @"(?:(?:https?|ftp|file):\/\/|www\.|ftp\.)(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[-A-Z0-9+&@#\/%=~_|$?!:,.])*(?:\([-A-Z0-9+&@#\/%=~_|$?!:,.]*\)|[A-Z0-9+&@#\/%=~_|$])";
-            //*var urlRegEx = @"(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+";
-            //var urlRegEx = @"/(http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\/\S*)?";
-            //var urlRegEx = @"/(ftp:\/\/|www\.|https?:\/\/){1}[a-zA-Z0-9u00a1-\uffff0-]{2,}\.[a-zA-Z0-9u00a1-\uffff0-]{2,}(\S*)";
-            //var urlRegEx = @"/[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?";
-            //var urlRegEx = @"/([--:\w?@%&+~#=]*\.[a-z]{2,4}\/{0,2})((?:[?&](?:\w+)=(?:\w+))+|[--:\w?@%&+~#=]+)?/g";
-
-            var matches = Regex.Matches(HtmlString, urlRegEx, RegexOptions.IgnoreCase);
-
-            if (matches.Count > 0)
-            {
-                foreach (var match in matches)
-                {
-                    var matchUrl = match.ToString();
-                    var linkHtml = $"<a href=\"{matchUrl}\" target=\"{Target}\">{matchUrl}</a>";
-                    fixedHtml = fixedHtml.Replace(matchUrl, linkHtml);
-                }
-
-            }
-
-            return fixedHtml;
         }
 
         /// <summary>
@@ -652,28 +623,28 @@
             return abbreviation;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="TextToSplit"></param>
-        /// <param name="Token"></param>
-        /// <returns></returns>
-        public static string SplitByTokenIfItExists(string TextToSplit, string Token)
-        {
-            if (!string.IsNullOrEmpty(TextToSplit))
-            {
-                if (TextToSplit.IndexOf(Token) > -1)
-                {
-                    return TextToSplit.Substring(0, TextToSplit.IndexOf(Token));
-                }
-                return TextToSplit;
-            }
-            else
-            {
-                return "";
-            }
+        ///// <summary>
+        ///// Split text 
+        ///// </summary>
+        ///// <param name="TextToSplit"></param>
+        ///// <param name="Token"></param>
+        ///// <returns></returns>
+        //public static string SplitByTokenIfItExists(string TextToSplit, string Token)
+        //{
+        //    if (!string.IsNullOrEmpty(TextToSplit))
+        //    {
+        //        if (TextToSplit.IndexOf(Token) > -1)
+        //        {
+        //            return TextToSplit.Substring(0, TextToSplit.IndexOf(Token));
+        //        }
+        //        return TextToSplit;
+        //    }
+        //    else
+        //    {
+        //        return "";
+        //    }
 
-        }
+        //}
 
         /// <summary>
         /// Removes numbers from a string
@@ -684,112 +655,11 @@
         {
             var stripped = TextWithNumbers;
 
-            stripped = new String(TextWithNumbers.Where(c => c != '-' && (c < '0' || c > '9')).ToArray());
+            stripped = new string(TextWithNumbers.Where(c => c != '-' && (c < '0' || c > '9')).ToArray());
 
             return stripped;
         }
-
-        /// <summary>
-        /// Remove all &lt;p&gt; tags
-        /// </summary>
-        /// <param name="Html"></param>
-        /// <param name="RetainBreaks">Replaces the paragraph tag with two &lt;br&gt; tags</param>
-        /// <returns></returns>
-        public static string RemoveAllParagraphTags(this string Html, bool RetainBreaks)
-        {
-            var result = new HtmlString(Html).RemoveAllParagraphTags(RetainBreaks);
-            return result.ToString();
-        }
-
-        /// <summary>
-        /// Removes surrounding &lt;p&gt; tags
-        /// </summary>
-        /// <param name="HtmlToFix"></param>
-        /// <returns></returns>
-        public static string RemoveOuterParagrahTags(this string HtmlToFix)
-        {
-            HtmlDocument doc = new HtmlDocument();
-            doc.LoadHtml(HtmlToFix);
-            string result = doc.DocumentNode.FirstChild.InnerHtml;
-
-            return result;
-        }
-
-        /// <summary>
-        /// Strips out &lt;p&gt; and &lt;/p&gt; tags if they were used as a wrapper
-        /// for other HTML content.
-        /// </summary>
-        /// <param name="Text">The HTML text.</param>
-        /// <param name="ConvertEmptyParagraphsToBreaks"></param>
-        public static string RemoveParagraphWrapperTags(this string Text, bool ConvertEmptyParagraphsToBreaks = false)
-        {
-            if (string.IsNullOrEmpty(Text))
-            {
-                return Text;
-            }
-
-            string trimmedText = Text.Trim();
-
-            if (ConvertEmptyParagraphsToBreaks)
-            {
-                //trimmedText = trimmedText.Replace("<p>", "<P>");
-                //trimmedText = trimmedText.Replace("</p>", "</P>");
-
-                trimmedText = trimmedText.RemoveDoubleSpaces();
-
-                trimmedText = trimmedText.Replace("<p></p>", "<br/>");
-                trimmedText = trimmedText.Replace("<P></P>", "<br/>");
-                trimmedText = trimmedText.Replace("<p> </p>", "<br/>");
-                trimmedText = trimmedText.Replace("<P> </P>", "<br/>");
-                trimmedText = trimmedText.Replace("<p>&nbsp;</p>", "<br/>");
-                trimmedText = trimmedText.Replace("<P>&nbsp;</P>", "<br/>");
-            }
-
-            string upperText = trimmedText.ToUpper();
-            int paragraphIndex = upperText.IndexOf("<P>");
-
-            if (paragraphIndex == -1 ||
-                paragraphIndex != upperText.LastIndexOf("<P>") ||
-                upperText.Substring(upperText.Length - 4, 4) != "</P>")
-            {
-                // Paragraph not used as a wrapper element
-                return Text;
-            }
-
-            // Remove paragraph wrapper tags
-            return trimmedText.Substring(3, trimmedText.Length - 7);
-        }
-
-        /// <summary>
-        /// Umbraco 7 Version
-        /// </summary>
-        /// <param name="Text"></param>
-        /// <returns></returns>
-        public static string RemoveFirstParagraphTag(this string Text)
-        {
-            if (String.IsNullOrEmpty(Text))
-                return "";
-
-            if (Text.Length > 5)
-            {
-                if (Text.ToUpper().Substring(0, 3) == "<P>")
-                    Text = Text.Substring(3, Text.Length - 3);
-                if (Text.ToUpper().Substring(Text.Length - 4, 4) == "</P>")
-                    Text = Text.Substring(0, Text.Length - 4);
-            }
-            return Text;
-        }
-
-        /// <summary>
-        /// Removes all Tags from string
-        /// </summary>
-        /// <param name="Input">Original string</param>
-        /// <returns></returns>
-        public static string StripHtml(this string Input)
-        {
-            return Regex.Replace(Input, "<.*?>", String.Empty);
-        }
-
+        
         /// <summary>
         /// Replaces double spaces with single spaces
         /// </summary>
@@ -825,27 +695,6 @@
                 return false;
         }
 
-
-        /// <summary>
-        /// Encodes the string
-        /// </summary>
-        /// <param name="OriginalString"></param>
-        /// <returns></returns>
-        public static string HtmlEncode(this string OriginalString)
-        {
-            return System.Web.HttpUtility.HtmlEncode(OriginalString);
-        }
-
-        /// <summary>
-        /// Decodes the string
-        /// </summary>
-        /// <param name="EncodedString"></param>
-        /// <returns></returns>
-        public static string HtmlDecode(this string EncodedString)
-        {
-            return System.Web.HttpUtility.HtmlDecode(EncodedString);
-        }
-
         /// <summary>
         /// Encodes the string
         /// </summary>
@@ -866,12 +715,6 @@
             return System.Web.HttpUtility.UrlDecode(EncodedString);
         }
 
-
-        [Obsolete("Use 'RemoveAllParagraphTags()")]
-        public static string RemoveParagraphTags(this string Html, bool RetainBreaks)
-        {
-            return Html.RemoveAllParagraphTags(RetainBreaks);
-        }
 
         #endregion
 
@@ -1044,6 +887,8 @@
             return string.Format("{0}{1}", shortString, Suffix);
         }
         #endregion
+
+
 
         #region Misc
 

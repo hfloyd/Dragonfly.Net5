@@ -23,6 +23,11 @@
         public bool Success { get; set; }
 
         /// <summary>
+        /// Name of the Function, method, etc. that generated this StatusMessage 
+        /// </summary>
+        public string RunningFunctionName { get; set; }
+
+        /// <summary>
         /// Status Message
         /// </summary>
         public string Message { get; set; }
@@ -36,39 +41,6 @@
         /// Short representative Code
         /// </summary>
         public string Code { get; set; }
-
-        /// <summary>
-        /// Name of the Object that this status message refers to
-        /// </summary>
-        public string ObjectName { get; set; }
-
-        /// <summary>
-        /// Int Id of the Object that this status message refers to
-        /// </summary>
-        public int ObjectId { get; set; }
-
-        /// <summary>
-        /// Guid of the Object that this status message refers to
-        /// </summary>
-        public string ObjectGuid { get; set; }
-
-        /// <summary>
-        /// Returns TRUE if there is content in the 'Message' property
-        /// </summary>
-        public bool HasMessage
-        {
-            get
-            {
-                if (this.Message != string.Empty & this.Message != null)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-        }
 
         /// <summary>
         /// Timestamp for start of message or operations
@@ -91,6 +63,21 @@
         /// Status Messages can be nested
         /// </summary>
         public List<StatusMessage> InnerStatuses { get; set; }
+
+        /// <summary>
+        /// Name of the Object that this status message refers to
+        /// </summary>
+        public string ObjectName { get; set; }
+
+        /// <summary>
+        /// Int Id of the Object that this status message refers to
+        /// </summary>
+        public int ObjectId { get; set; }
+
+        /// <summary>
+        /// Guid of the Object that this status message refers to
+        /// </summary>
+        public string ObjectGuid { get; set; }
 
         /// <summary>
         /// Object which can be appended for additional information
@@ -116,6 +103,8 @@
         {
             get => _relatedObjectType;
         }
+
+
 
         #endregion
 
@@ -169,6 +158,7 @@
         #endregion
 
         #region Methods
+
         /// <summary>
         /// Duration between TimestampStart and TimestampEnd
         /// </summary>
@@ -185,6 +175,61 @@
                 return null;
             }
         }
+
+        /// <summary>
+        /// Returns TRUE if there is content in the 'Message' property
+        /// </summary>
+        public bool HasMessage()
+        {
+            if (this.Message != string.Empty & this.Message != null)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Checks main and all nested StatusMessages for exceptions. 
+        /// </summary>
+        /// <returns>Returns TRUE if any Exceptions found.</returns>
+        public bool HasAnyExceptions()
+        {
+            if (this.RelatedException != null)
+            {
+                return true;
+            }
+
+            if (this.InnerStatuses.Any())
+            {
+                return this.InnerStatuses.Select(n => n.RelatedException).Any(n => n != null);
+            }
+
+            return false;
+        }
+
+
+        /// <summary>
+        /// Checks main and all nested StatusMessages for Success=false. 
+        /// </summary>
+        /// <returns>Returns TRUE if any found.</returns>
+        public bool HasAnyFailures()
+        {
+            if (!this.Success)
+            {
+                return true;
+            }
+
+            if (this.InnerStatuses.Any())
+            {
+                return this.InnerStatuses.Any(n => n.Success != true);
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Converts StatusMessage into a HttpResponseMessage to return via a WebApi call, for instance.
         /// </summary>
@@ -202,6 +247,7 @@
                 )
             };
         }
+
         /// <summary>
         /// Converts StatusMessage into a string appropriate for logging in a text file
         /// </summary>
@@ -214,7 +260,7 @@
 
             sb.AppendLine(string.Format("{0}Success: {1}", indent, this.Success));
 
-            if (this.HasMessage)
+            if (this.HasMessage())
             {
                 sb.AppendLine(string.Format("{0}Message: {1}", indent, this.Message));
                 sb.AppendLine(this.MessageDetails);
@@ -231,6 +277,8 @@
 
             return sb.ToString();
         }
+
+   
 
         #endregion
 

@@ -5,7 +5,9 @@
     using System.IO;
     using System.Linq;
     using System.Net;
+    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.WebUtilities;
+    using Microsoft.Extensions.Primitives;
 
     /// <summary>
     /// Functions to assit with Url-related tasks - reading, editing/building, query strings, basic calling
@@ -13,6 +15,25 @@
     public static class Urls
     {
         private const string ThisClassName = "Dragonfly.NetHelpers.Urls";
+
+        /// <summary>
+        /// Get the full Uri of the Request
+        /// </summary>
+        /// <param name="CurrentRequest">In Razor, Use 'Context.Request'</param>
+        /// <returns></returns>
+        public static Uri CurrentRequestUri(HttpRequest CurrentRequest)
+        {
+            var uriBuilder = new UriBuilder
+            {
+                Scheme = CurrentRequest.Scheme,
+                Host = CurrentRequest.Host.Host,
+                Port = CurrentRequest.Host.Port ?? -1,
+                Path = CurrentRequest.Path,
+                Query = CurrentRequest.QueryString.ToUriComponent()
+            };
+
+            return uriBuilder.Uri;
+        }
 
         #region Read Data from Url
 
@@ -76,7 +97,23 @@
 
         #endregion
 
-        #region Get QueryString Values
+        #region Get QueryString Values (From HttpRequest)
+
+        /// <summary>
+        /// Returns the Querystring value cast to T, or the Default, if missing
+        /// </summary>
+        /// <param name="CurrentRequest">In Razor, Use 'Context.Request'</param>
+        /// <param name="QueryStringKey">Key name</param>
+        /// <param name="DefaultIfMissing">A default value to return in case the Querystring value is missing</param>
+        /// <returns></returns>
+        public static T GetSafeQueryStringValue<T>(HttpRequest CurrentRequest, string QueryStringKey, T DefaultIfMissing)
+        {
+            var qsVal = "";
+            var qsAll = CurrentRequest.Query;
+            var queryDict = qsAll.ToDictionary(n => n.Key, n => n.Value);
+
+            return GetSafeQueryStringValue<T>(queryDict, QueryStringKey, DefaultIfMissing);
+        }
 
         /// <summary>
         /// Returns the Querystring value cast to T, or the Default, if missing
@@ -89,32 +126,74 @@
         {
             var qsAll = CurrentRequestUri.Query;
             var queryDict = QueryHelpers.ParseQuery(qsAll);
-            var qsVal = queryDict[QueryStringKey];
+
+            return GetSafeQueryStringValue<T>(queryDict, QueryStringKey, DefaultIfMissing);
+
+        }
+
+        /// <summary>
+        /// Returns the Querystring value cast to T, or the Default, if missing
+        /// </summary>
+        /// <param name="QueryDict">Querystring values dictionary. In Razor, Use 'Context.Request.Query'</param>
+        /// <param name="QueryStringKey">Key name</param>
+        /// <param name="DefaultIfMissing">A default value to return in case the Querystring value is missing</param>
+        /// <returns></returns>
+        public static T GetSafeQueryStringValue<T>(Dictionary<string, StringValues> QueryDict, string QueryStringKey, T DefaultIfMissing)
+        {
+            var qsVal = "";
+            object qsObj = null;
+
+            if (QueryDict.ContainsKey(QueryStringKey))
+            {
+                qsVal = QueryDict[QueryStringKey];
+            }
 
             if (!string.IsNullOrEmpty(qsVal))
             {
                 //try conversion
                 try
                 {
-                    var qsObj = (object)qsVal;
-                    return (T)qsObj;
+                    //some specific conversions
+                    if (typeof(T) == typeof(int))
+                    {
+                        var isInt = Int32.TryParse(qsVal, out int intVal);
+                        if (isInt)
+                        {
+                            qsObj = (object)intVal;
+
+                        }
+                    }
+                    //else if (typeof(T) == typeof())
+                    //{
+                    //}
+                    else
+                    {
+                        //general object
+                        qsObj = (object)qsVal;
+                        //return (T)qsObj;
+                    }
                 }
-                catch (Exception e)
+                catch (Exception exception)
                 {
-                    //try some specific conversions?
-                    //if (typeof(T) == typeof(int))
-                        throw;
+                    //Didn't work
+                    throw;
                 }
+
+                return (T)qsObj;
             }
             else
             {
                 //No QS val matching Key
                 return DefaultIfMissing;
             }
+
         }
 
 
+        #endregion
 
+
+        #region Get QueryString Values (OBSOLETE)
         /// <summary>
         /// Returns a string value (empty string, if missing)
         /// </summary>
@@ -122,7 +201,7 @@
         /// <param name="QueryStringKey">Key name</param>
         /// <param name="DefaultIfMissing">Value to return if missing/empty</param>
         /// <returns></returns>
-        //TODO: Fix & Re-enable
+        [Obsolete("Use 'GetSafeQueryStringValue<string>()'")]
         public static string GetSafeQueryString(Uri CurrentRequestUri, string QueryStringKey, string DefaultIfMissing = "")
         {
             var returnVal = DefaultIfMissing;
@@ -146,7 +225,7 @@
         /// <param name="QueryStringKey">Key name</param>
         /// <param name="DefaultIfMissing">Value to return if missing/empty</param>
         /// <returns></returns>
-        //TODO: Fix & Re-enable
+        [Obsolete("Use 'GetSafeQueryStringValue<bool>()'")]
         public static bool GetSafeQueryBool(Uri CurrentRequestUri, string QueryStringKey, bool DefaultIfMissing = false)
         {
             var returnVal = DefaultIfMissing;
@@ -173,6 +252,7 @@
         /// <param name="QueryStringKey">Key name</param>
         /// <param name="DefaultIfMissing">Value to return if missing/empty</param>
         /// <returns></returns>
+        [Obsolete("Use 'GetSafeQueryStringValue<int>()'")]
         public static int GetSafeQueryInt(Uri CurrentRequestUri, string QueryStringKey, int DefaultIfMissing = 0)
         {
             var returnVal = DefaultIfMissing;
@@ -276,6 +356,22 @@
         public static string AppendQueryStringToUrl(string OriginalUrl, Dictionary<string, string> QsDictionary, string AppendMatchingTagDelim = "", string NewAnchor = "")
         {
             var url = new Uri(OriginalUrl);
+            var newUrl = AppendQueryStringToUrl(url, QsDictionary, AppendMatchingTagDelim, NewAnchor);
+
+            return newUrl;
+        }
+
+        /// <summary>
+        /// Updates a URL with new/additional query string values
+        /// </summary>
+        /// <param name="OriginalUrl">Url string to append to</param>
+        /// <param name="QsDictionary">Query String Key/Value dictionary</param>
+        /// <param name="AppendMatchingTagDelim">The string used to append additional values to an existing Key. If omitted, existing tags will be replaced, not appended.</param>
+        /// <param name="NewAnchor">If Provided, will append/replace the anchor tag</param>
+        /// <returns>URI</returns>
+        public static string AppendQueryStringToUrl(Uri OriginalUrl, Dictionary<string, string> QsDictionary, string AppendMatchingTagDelim = "", string NewAnchor = "")
+        {
+            var url = OriginalUrl;
             foreach (var qs in QsDictionary)
             {
                 var newUrl = AppendQueryStringToUrl(url, qs.Key, qs.Value, AppendMatchingTagDelim, NewAnchor);
@@ -315,7 +411,7 @@
         {
             var uri = OriginalUri;
 
-            var baseUrl =$"{uri.Scheme}://{uri.Host}{uri.LocalPath}" ;
+            var baseUrl = $"{uri.Scheme}://{uri.Host}{uri.LocalPath}";
             //var basePath = uri.AbsolutePath;
 
             //Anchor Tag
@@ -417,7 +513,7 @@
         {
             var uri = OriginalUri;
 
-            var baseUrl = uri.AbsoluteUri.Replace(uri.Query, "");
+            var baseUrl = uri.Query!=""? uri.AbsoluteUri.Replace(uri.Query, ""): uri.AbsoluteUri;
             // var basePath = uri.AbsolutePath;
 
             //Anchor Tag
@@ -461,16 +557,18 @@
 
         public static string AssembleQueryString(Dictionary<string, string> QueryStringDictionary)
         {
-            var allQs = "&";
+            var allQs = "";
+            var qsPairs = new List<string>();
             foreach (var qs in QueryStringDictionary)
             {
                 if (qs.Value != "")
                 {
                     //add qs with value
-                    allQs = string.Format("{0}&{1}={2}", allQs, qs.Key, qs.Value);
+                    qsPairs.Add($"{ qs.Key}={qs.Value}");
+                    //allQs = string.Format("{0}&{1}={2}", allQs, qs.Key, qs.Value);
                 }
             }
-            allQs = allQs.Replace("&&", "");
+            allQs =string.Join('&',qsPairs);
 
             return allQs;
         }
