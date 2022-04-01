@@ -19,6 +19,7 @@
     <FileVersion>$(Version)</FileVersion>
     <PackageReleaseNotes>New ViewRenderService &amp; HttpResponseMessageResult added; StatusMessage updated</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <BaseIntermediateOutputPath />
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="HttpHelpers\**" />
@@ -48,7 +49,7 @@
 	</ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>bin\Release\net45\Dragonfly.Net.xml</DocumentationFile>
+    <DocumentationFile></DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DocumentationFile>bin\Debug\net5\Dragonfly.Net.xml</DocumentationFile>

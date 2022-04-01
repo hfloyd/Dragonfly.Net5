@@ -2,18 +2,19 @@
 
 A collection of .Net Helpers/Models created by [Heather Floyd](https://www.HeatherFloyd.com).
 
-Latest NuGet Package available @ [www.nuget.org/packages/Dragonfly.Net](https://www.nuget.org/packages/Dragonfly.Net5/)
+## Installation ##
+[![Nuget Downloads](https://buildstats.info/nuget/Dragonfly.Net5)](https://www.nuget.org/packages/Dragonfly.Net5/)
 
     PM > Install-Package Dragonfly.Net5
 
 #### NOTE: IN PROGRESS ####
-This is currently being ported from the .Net Framework version, 'Dragonfly.Net'. Some of those functions have been removed from the new version and others need to be re-implemented.
+This is currently being ported from the .Net Framework version, 'Dragonfly.Net'. Some of those functions have been removed from the new version and others may or may not be re-implemented.
 
 ## Features & Usage : Models ###
 
 ### StatusMessage
 
-A great way to return more detailed information from your custom functions and APIs. You can assign any Exceptions, as well as nest statuses. Explore all the properties and methods for details.
+An object used for collecting and reporting information about code operations - a great way to return more detailed information from your custom functions and APIs. You can assign any Exceptions, as well as nest statuses. Explore all the properties and methods for details.
 
 
 *Example Usage:*
