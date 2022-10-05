@@ -43,8 +43,6 @@
             return false;
         }
 
-
-
         #endregion
 
         #region Altering HtmlString Values
@@ -153,6 +151,39 @@
 
         #endregion
 
+        #region If
+        /// <summary>
+        /// If the test is true, the string valueIfTrue will be returned, otherwise the valueIfFalse will be returned.
+        /// </summary>
+        public static HtmlString If(bool Test, string ValueIfTrue, string ValueIfFalse)
+        {
+            return Test ? new HtmlString(ValueIfTrue) : new HtmlString(ValueIfFalse);
+        }
+
+        /// <summary>
+        /// If the test is true, the string valueIfTrue will be returned, otherwise the valueIfFalse will be returned.
+        /// </summary>
+        public static HtmlString If(bool Test, HtmlString ValueIfTrue, HtmlString ValueIfFalse)
+        {
+            return Test ? ValueIfTrue : ValueIfFalse;
+        }
+
+        /// <summary>
+        /// If the test is true, the string valueIfTrue will be returned, otherwise an empty string will be returned.
+        /// </summary>
+        public static HtmlString If(bool Test, string ValueIfTrue)
+        {
+            return Test ? new HtmlString(ValueIfTrue) : new HtmlString(string.Empty);
+        }
+
+        /// <summary>
+        /// If the test is true, the string valueIfTrue will be returned, otherwise an empty string will be returned.
+        /// </summary>
+        public static HtmlString If(bool Test, HtmlString ValueIfTrue)
+        {
+            return Test ? ValueIfTrue : new HtmlString(string.Empty);
+        }
+        #endregion
 
         #region String-based
 

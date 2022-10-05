@@ -7,21 +7,27 @@
     using System.Net;
     using System.Text;
     using System.Threading;
+    using Dragonfly.NetHelpers;
     using Dragonfly.NetModels;
+    using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore;
+    using Microsoft.Extensions.Hosting.Internal;
+    using Microsoft.Extensions.Logging;
 
     /// <summary>
     /// Helpers to handle File I/O
     /// </summary>
-    public static class FileHelperService
+    public class FileHelperService
     {
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly ILogger _logger;
 
-        private const string ThisClassName = "Dragonfly.NetHelperServices.FileHelperService";
- private readonly IWebHostEnvironment _webHostEnvironment;
-
-        public FileHelperService(IWebHostEnvironment webHostEnvironment)
+        private string DefaultLogPrefix = "Dragonfly.NetHelperServices.FileHelperService";
+        public FileHelperService(
+            ILogger<FileHelperService> logger,
+            IWebHostEnvironment webHostEnvironment)
         {
+            _logger = logger;
             _webHostEnvironment = webHostEnvironment;
         }
 
@@ -30,7 +36,7 @@
         //    string contentRootPath = _webHostEnvironment.ContentRootPath;
         //    Path.Combine(contentRootPath, "Views", s)
         //}
-    }
+
 
 
         #region Retrieve Remote Files (HTTP)
@@ -41,7 +47,7 @@
         /// <param name="FileUrl">Http url of file to save</param>
         /// <param name="SaveLocationFolder">disk folder where the file should be saved (can be virtual or mapped)</param>
         /// <param name="SaveFileName">Desired filename for saved file</param>
-        public static void DownloadAndSaveHttpFile(string FileUrl, string SaveLocationFolder, string SaveFileName)
+        public void DownloadAndSaveHttpFile(string FileUrl, string SaveLocationFolder, string SaveFileName)
         {
             string SaveLocation = String.Concat(SaveLocationFolder, "\\", SaveFileName);
 
@@ -53,25 +59,20 @@
         /// </summary>
         /// <param name="FileUrl">Http url of file to save</param>
         /// <param name="SaveLocation">Disk location (incl. filename) where the file should be saved (can be virtual or mapped)</param>
-        public static void DownloadAndSaveHttpFile(string FileUrl, string SaveLocation)
+        public void DownloadAndSaveHttpFile(string FileUrl, string SaveLocation)
         {
             string RemoteURL = FileUrl;
-            //TODO: Update using new code pattern:
-            //var functionName = string.Format("{0}.GetMySQLDataSet", ThisClassName);
-            //var msg = string.Format("");
-            //Info.LogInfo("Files.DownloadHttpFile: RemoteURL=" + RemoteURL);
+
+            _logger.LogInformation($"{DefaultLogPrefix}.DownloadHttpFile: RemoteURL=" + RemoteURL);
 
             string ServerPath = "";
             try
             {
-                ServerPath = HttpContext.Current.Server.MapPath(SaveLocation);
+                ServerPath = _webHostEnvironment.MapPathWebRoot(SaveLocation);
             }
-            catch (HttpException exMapPath)
+            catch (Exception exMapPath)
             {
-                //TODO: Update using new code pattern:
-                //var functionName = string.Format("{0}.GetMySQLDataSet", ThisClassName);
-                //var msg = string.Format("");
-                //Info.LogException("Files.DownloadFtpFile", exMapPath, "Error Handled: by Code - No problem");
+                // _logger.LogError(exMapPath,$"{DefaultLogPrefix}.DownloadFtpFile : Error Handled: by Code - No problem");
                 ServerPath = SaveLocation;
             }
 
@@ -96,17 +97,14 @@
             }
             catch (Exception ex)
             {
-                //TODO: Update using new code pattern:
-                //var functionName = string.Format("{0}.GetMySQLDataSet", ThisClassName);
-                //var msg = string.Format("");
-                //Info.LogException("Files.DownloadFtpFile", ex);
+                _logger.LogError(ex, $"Error in {DefaultLogPrefix}.DownloadFtpFile");
             }
         }
 
         #endregion
 
         #region FTP
-        public static string[] GetFtpFileList(string FtpHostServer, string FtpUserName, string FtpPassword)
+        public string[] GetFtpFileList(string FtpHostServer, string FtpUserName, string FtpPassword)
         {
             string[] downloadFiles;
             StringBuilder result = new StringBuilder();
@@ -150,50 +148,38 @@
             }
         }
 
-        public static bool DownloadFtpFile(string FtpHostServer, string FtpUserName, string FtpPassword, string FtpDirectoryPath, string FtpFileName, string SaveLocationPath, string SaveFileName)
+        public bool DownloadFtpFile(string FtpHostServer, string FtpUserName, string FtpPassword, string FtpDirectoryPath, string FtpFileName, string SaveLocationPath, string SaveFileName)
         {
             string RemoteURL = "ftp://" + FtpHostServer + "/" + FtpDirectoryPath + "/" + FtpFileName;
-            //TODO: Update using new code pattern:
-            //var functionName = string.Format("{0}.GetMySQLDataSet", ThisClassName);
-            //var msg = string.Format("");
-            //Info.LogInfo("Files.DownloadFtpFile: RemoteURL=" + RemoteURL);
+
+            // _logger.LogInformation($"{DefaultLogPrefix}.Files.DownloadFtpFile: RemoteURL=" + RemoteURL);
 
             string FilePath = FtpDirectoryPath + "/" + FtpFileName;
             string ServerPath = "";
             try
             {
-                ServerPath = HttpContext.Current.Server.MapPath(SaveLocationPath);
+                ServerPath = _webHostEnvironment.MapPathWebRoot(SaveLocationPath);
             }
-            catch (HttpException exMapPath)
+            catch (Exception exMapPath)
             {
-                //TODO: Update using new code pattern:
-                //var functionName = string.Format("{0}.GetMySQLDataSet", ThisClassName);
-                //var msg = string.Format("");
-                //Info.LogException("Files.DownloadFtpFile", exMapPath, "Error Handled: by Code - No problem");
+                // _logger.LogError(exMapPath, $"{DefaultLogPrefix}.DownloadFtpFile - Error Handled: by Code - No problem");
                 ServerPath = SaveLocationPath;
             }
 
             string FullSaveLocation = String.Concat(ServerPath, "\\", SaveFileName);
-            //TODO: Update using new code pattern:
-            //var functionName = string.Format("{0}.GetMySQLDataSet", ThisClassName);
-            //var msg = string.Format("");
-            //Info.LogInfo("Files.DownloadFtpFile: FullSaveLocation=" + FullSaveLocation);
+
+            _logger.LogInformation($"{DefaultLogPrefix}.DownloadFtpFile: FullSaveLocation=" + FullSaveLocation);
 
             //Test that server can be accessed
-            //TODO: Update using new code pattern:
-            //var functionName = string.Format("{0}.GetMySQLDataSet", ThisClassName);
-            //var msg = string.Format("");
-            //Info.LogInfo("Files.DownloadFtpFile: FtpServerStatus=" + FtpServerStatus(FtpHostServer, FtpUserName, FtpPassword));
-            //Info.LogInfo("Files.DownloadFtpFile: FtpDirectoryStatus=" + FtpDirectoryStatus(FtpHostServer, FtpUserName, FtpPassword, FtpDirectoryPath));
+            _logger.LogInformation($"{DefaultLogPrefix}.DownloadFtpFile: FtpServerStatus=" + FtpServerStatus(FtpHostServer, FtpUserName, FtpPassword));
+            _logger.LogInformation($"{DefaultLogPrefix}.DownloadFtpFile: FtpDirectoryStatus=" + FtpDirectoryStatus(FtpHostServer, FtpUserName, FtpPassword, FtpDirectoryPath));
 
             FileStream writeStream = new FileStream(FullSaveLocation, FileMode.Create);
             try
             {
                 long length = GetFileLength(FtpHostServer, FtpUserName, FtpPassword, FilePath, true);
-                //TODO: Update using new code pattern:
-                //var functionName = string.Format("{0}.GetMySQLDataSet", ThisClassName);
-                //var msg = string.Format("");
-                //Info.LogInfo("Files.DownloadFtpFile: GetFileLength(RemoteURL)=" + length);
+
+                _logger.LogInformation($"{DefaultLogPrefix}.DownloadFtpFile: GetFileLength(RemoteURL)=" + length);
                 long offset = 0;
                 int retryCount = 10;
                 int? readTimeout = 5 * 60 * 1000; //five minutes
@@ -202,10 +188,7 @@
                 {
                     using (Stream responseStream = GetFileAsStream(RemoteURL, FtpUserName, FtpPassword, true, offset, requestTimeout: readTimeout != null ? readTimeout.Value : Timeout.Infinite))
                     {
-                        //TODO: Update using new code pattern:
-                        //var functionName = string.Format("{0}.GetMySQLDataSet", ThisClassName);
-                        //var msg = string.Format("");
-                        //Info.LogInfo("Files.DownloadFtpFile: GetFileAsStream(RemoteURL).length" + responseStream.Length);
+                        _logger.LogInformation($"{DefaultLogPrefix}.DownloadFtpFile: GetFileAsStream(RemoteURL).length" + responseStream.Length);
 
                         using (FileStream fileStream = new FileStream(FullSaveLocation, FileMode.Append))
                         {
@@ -226,18 +209,11 @@
                             catch (WebException exWeb)
                             {
                                 // Do nothing - consume this exception to force a new read of the rest of the file
-
-                                //TODO: Update using new code pattern:
-                                //var functionName = string.Format("{0}.GetMySQLDataSet", ThisClassName);
-                                //var msg = string.Format("");
-                                //Info.LogException("Files.DownloadFtpFile", webex, "HANDLED");
+                                _logger.LogError(exWeb, $"{DefaultLogPrefix}.DownloadFtpFile - HANDLED");
                             }
                         }
 
-                        //TODO: Update using new code pattern:
-                        //var functionName = string.Format("{0}.GetMySQLDataSet", ThisClassName);
-                        //var msg = string.Format("");
-                        //Info.LogInfo("Files.DownloadFtpFile : File.Exists(FullSaveLocation)=", File.Exists(FullSaveLocation));
+                        _logger.LogInformation($"{DefaultLogPrefix}.DownloadFtpFile : File.Exists(FullSaveLocation)=", File.Exists(FullSaveLocation));
 
                         if (File.Exists(FullSaveLocation))
                         {
@@ -259,23 +235,18 @@
             }
             catch (Exception ex)
             {
-                //TODO: Update using new code pattern:
-                //var functionName = string.Format("{0}.GetMySQLDataSet", ThisClassName);
-                //var msg = string.Format("");
-                //Info.LogException("Files.DownloadFtpFile", ex);
+                _logger.LogError(ex, $"{DefaultLogPrefix}.DownloadFtpFile", ex);
             }
 
             return false;
         }
 
-        private static string FtpDirectoryStatus(string FtpHostServer, string username, string password, string FtpFolderPathToTest = "")
+        private string FtpDirectoryStatus(string FtpHostServer, string username, string password, string FtpFolderPathToTest = "")
         {
             string ReturnMsg = "";
             string FullDirToTest = "ftp://" + FtpHostServer + "/" + FtpFolderPathToTest;
-            //TODO: Update using new code pattern:
-            //var functionName = string.Format("{0}.GetMySQLDataSet", ThisClassName);
-            //var msg = string.Format("");
-            //Info.LogInfo("Files.FtpDirectoryExists: FullDirToTest=" + FullDirToTest);
+
+            _logger.LogInformation($"{DefaultLogPrefix}.FtpDirectoryExists: FullDirToTest=" + FullDirToTest);
 
             FtpWebRequest request = (FtpWebRequest)WebRequest.Create(FullDirToTest);
             request.Credentials = new NetworkCredential(username, password);
@@ -287,7 +258,7 @@
                 using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
                 {
                     // Okay.  
-                    ReturnMsg = "Server Connection Sucessful";
+                    ReturnMsg = "Server Connection Successful";
                 }
             }
             catch (WebException ex)
@@ -314,14 +285,12 @@
             return ReturnMsg;
         }
 
-        private static string FtpServerStatus(string FtpHostServer, string username, string password)
+        private string FtpServerStatus(string FtpHostServer, string username, string password)
         {
             string ReturnMsg = "";
             string ServerToTest = "ftp://" + FtpHostServer + "/";
-            //TODO: Update using new code pattern:
-            //var functionName = string.Format("{0}.GetMySQLDataSet", ThisClassName);
-            //var msg = string.Format("");
-            //Info.LogInfo("Files.FtpServerStatus: ServerToTest=" + ServerToTest);
+
+            _logger.LogInformation($"{DefaultLogPrefix}.FtpServerStatus: ServerToTest=" + ServerToTest);
 
             FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ServerToTest);
             request.Credentials = new NetworkCredential(username, password);
@@ -333,7 +302,7 @@
                 using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
                 {
                     // Okay.  
-                    ReturnMsg = "Server Connection Sucessful";
+                    ReturnMsg = "Server Connection Successful";
                 }
             }
             catch (WebException ex)
@@ -360,7 +329,7 @@
             return ReturnMsg;
         }
 
-        private static Stream GetFileAsStream(string ftpUrl, string username, string password, bool usePassive, long offset, int requestTimeout)
+        private Stream GetFileAsStream(string ftpUrl, string username, string password, bool usePassive, long offset, int requestTimeout)
         {
             FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpUrl);
 
@@ -394,7 +363,7 @@
         /// </summary>
         /// <param name="FolderPath">Path to directory</param>
         /// <returns>TRUE if sucessful</returns>
-        public static bool CreateDirectoryIfMissing(string FolderPath)
+        public bool CreateDirectoryIfMissing(string FolderPath)
         {
             bool success = false;
 
@@ -414,10 +383,7 @@
                 }
                 catch (Exception ex)
                 {
-                    //TODO: Update using new code pattern:
-                    //var functionName = string.Format("{0}.GetMySQLDataSet", ThisClassName);
-                    //var msg = string.Format("");
-                    //Info.LogException("Files.CreateDirectoryIfMissing", ex, "[MappedFolderPath=" + MappedFolderPath + "]");
+                    _logger.LogError(ex, $"{DefaultLogPrefix}.CreateDirectoryIfMissing - [MappedFolderPath=" + mappedFolderPath + "]");
                     success = false;
                 }
             }
@@ -429,7 +395,7 @@
         /// </summary>
         /// <param name="FullFilePath">Path for directories and file</param>
         /// <returns>Filestream for new file</returns>
-        public static FileStream CreateFileAndDirectory(string FullFilePath)
+        public FileStream CreateFileAndDirectory(string FullFilePath)
         {
             string directoryName = Path.GetDirectoryName(FullFilePath);
 
@@ -451,7 +417,7 @@
         /// <param name="CreateDirectoryIfMissing">If the directories int he path don't exist, create them rather than failing</param>
         /// <param name="FailSilently">If TRUE won't throw an error on failure. Included for backward compatibility.</param>
         /// <returns></returns>
-        public static bool CreateTextFile(string FilePath, string TextContent, bool CreateDirectoryIfMissing = false, bool FailSilently = true)
+        public bool CreateTextFile(string FilePath, string TextContent, bool CreateDirectoryIfMissing = false, bool FailSilently = true)
         {
             string mappedFilePath = "";
             var canGetPath = TryGetMappedPath(FilePath, out mappedFilePath);
@@ -459,7 +425,9 @@
             {
                 if (CreateDirectoryIfMissing)
                 {
-                    string directoryName = Path.GetDirectoryName(FileHelperService.GetMappedPath(FilePath));
+                    string mappedPath="";
+                    var isMappable = TryGetMappedPath(FilePath, out mappedPath);
+                    string directoryName = Path.GetDirectoryName(mappedPath);
 
                     if (Directory.Exists(directoryName) == false)
                     {
@@ -486,7 +454,7 @@
                 //    var functionName = string.Format("{0}.CreateTextFile", ThisClassName);
                 //    if (mappedFilePath.Contains(":"))
                 //    {msg = "Do you have a colon in the filename?";}
-                //   // Info.LogException(functionName, ex, msg);
+                //   // _logger.LogError(ex,functionName, ex, msg);
                 //}
             }
             return true;
@@ -505,12 +473,12 @@
         //    string LogFilePath = "";
         //    try
         //    {
-        //        LogFilePath = HttpContext.Current.Server.MapPath(FilePath);
+        //        LogFilePath = _webHostEnvironment.MapPathWebRoot(FilePath);
         //    }
         //    catch (System.Web.HttpException exMapPath)
         //    {
         //        var functionName = string.Format("{0}.WriteToTextFile", ThisClassName);
-        //        //Info.LogException(functionName, exMapPath, "(Error handled by Code)", true);
+        //        //_logger.LogError(ex,functionName, exMapPath, "(Error handled by Code)", true);
         //        LogFilePath = FilePath;
         //    }
 
@@ -546,9 +514,10 @@
 
         #region Read Files
 
-        public static IEnumerable<string> ListLocalFiles(string FolderPath)
+        public IEnumerable<string> ListLocalFiles(string FolderPath)
         {
-            var mappedPath = FileHelperService.GetMappedPath(FolderPath);
+            string mappedPath;
+            var isMappable = TryGetMappedPath(FolderPath, out mappedPath);
             var files = System.IO.Directory.EnumerateFiles(mappedPath);
 
             return files;
@@ -559,9 +528,10 @@
         /// </summary>
         /// <param name="FilePath">Full path to file</param>
         /// <returns></returns>
-        public static string GetTextFileContents(string FilePath)
+        public  string GetTextFileContents(string FilePath)
         {
-            var mappedFilePath = FileHelperService.GetMappedPath(FilePath);
+            string mappedFilePath;
+            var isMappable = TryGetMappedPath(FilePath, out mappedFilePath);
 
             string readText = File.ReadAllText(mappedFilePath);
 
@@ -602,17 +572,16 @@
         /// </summary>
         /// <param name="FullFilePath">Relative or Mapped Path</param>
         /// <returns>True if file found, false if not</returns>
-        public static bool FileExists(string FullFilePath)
+        public bool FileExists(string FullFilePath)
         {
             string mappedFilePath = "";
             try
             {
-                mappedFilePath = HttpContext.Current.Server.MapPath(FullFilePath);
+                mappedFilePath = _webHostEnvironment.MapPathWebRoot(FullFilePath);
             }
-            catch (System.Web.HttpException exMapPath)
+            catch (Exception exMapPath)
             {
-                var functionName = string.Format("{0}.FileExists", ThisClassName);
-                //Info.LogException(functionName, exMapPath, "(Error handled by Code)", true);
+                _logger.LogError(exMapPath, $"{DefaultLogPrefix}.FileExists - (Error handled by Code)");
                 mappedFilePath = FullFilePath;
             }
 
@@ -633,7 +602,7 @@
         /// <param name="Bytes">value of the file size in bytes</param>
         /// <param name="FormatString">Adjust the format string to your preferences. For example "{0:0.#}{1}" would show a single decimal place, and no space.</param>
         /// <returns></returns>
-        public static string GetFriendlyFileSize(double Bytes, string FormatString = "{0:0.##} {1}")
+        public string GetFriendlyFileSize(double Bytes, string FormatString = "{0:0.##} {1}")
         {
             string[] sizes = { "B", "KB", "MB", "GB" };
             double len = Bytes;
@@ -649,7 +618,7 @@
             return result;
         }
 
-        public static Size GetJpegDimensions(string filename)
+        public Size GetJpegDimensions(string filename)
         {
             FileStream stream = null;
             BinaryReader rdr = null;
@@ -719,7 +688,7 @@
             }
         }
 
-        private static long GetFileLength(string FtpHostServer, string username, string password, string FtpFilePath, bool usePassive)
+        private long GetFileLength(string FtpHostServer, string username, string password, string FtpFilePath, bool usePassive)
         {
             string RemoteURL = "ftp://" + FtpHostServer + "/" + FtpFilePath;
 
@@ -730,14 +699,14 @@
             //TODO: Update using new code pattern:
             //var functionName = string.Format("{0}.GetMySQLDataSet", ThisClassName);
             //var msg = string.Format("");
-            //Info.LogInfo("Files.GetFileLength : Server Test Response=" + ServerResponse.ToString());
+            // _logger.LogInformation($"{DefaultLogPrefix}.Files.GetFileLength : Server Test Response=" + ServerResponse.ToString());
 
 
             FtpWebRequest request = (FtpWebRequest)WebRequest.Create(RemoteURL);
             //TODO: Update using new code pattern:
             //var functionName = string.Format("{0}.GetMySQLDataSet", ThisClassName);
             //var msg = string.Format("");
-            //Info.LogInfo("Files.GetFileLength : RequestUri=" + request.RequestUri);
+            // _logger.LogInformation($"{DefaultLogPrefix}.Files.GetFileLength : RequestUri=" + request.RequestUri);
             request.KeepAlive = false;
             request.UsePassive = usePassive;
             request.Credentials = new NetworkCredential(username, password);
@@ -750,7 +719,7 @@
 
         }
 
-        private static ushort ReadBEUshort(BinaryReader rdr)
+        private ushort ReadBEUshort(BinaryReader rdr)
         {
             ushort hi = rdr.ReadByte();
             hi <<= 8;
@@ -761,12 +730,12 @@
         #endregion
 
         #region MapPath
-
-        public static string UnMapPath(string MappedPath)
+        public string UnMapPath(string MappedPath)
         {
-            string RootMapPath = GetMappedPath("/");
-            string VirtualPath = "";
 
+            string RootMapPath;
+            var isMappable = TryGetMappedPath("/", out RootMapPath);
+            string VirtualPath = "";
 
             VirtualPath = MappedPath.ToLower(); //start with the provided MappedPath, standardized to lowercase to make replacing easy.
             VirtualPath = VirtualPath.Replace(RootMapPath.ToLower(), ""); //Get rid of the portion to the website root
@@ -777,53 +746,6 @@
             return VirtualPath;
         }
 
-        /// <summary>
-        /// Get a mapped path of the provided path
-        /// </summary>
-        /// <param name="MappedOrRelativePath">The Path to look for</param>
-        /// <returns>The Mapped path</returns>
-        [Obsolete("Consider using TryGetMappedPath()")]
-        public static string GetMappedPath(string MappedOrRelativePath)
-        {
-            string MappedFolderPath = "";
-            if (MappedOrRelativePath != null)
-            {
-                try
-                {
-                    if (HttpContext.Current != null)
-                    {
-                        MappedFolderPath = HttpContext.Current.Server.MapPath(MappedOrRelativePath);
-                    }
-                    else
-                    {
-                        MappedFolderPath = HostingEnvironment.MapPath(MappedOrRelativePath);
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    //Try AppDomain
-                    var fixedPath = "";
-                    if (MappedOrRelativePath.StartsWith("~"))
-                    {
-                        fixedPath = MappedOrRelativePath.Replace("~/", "");
-                        MappedFolderPath = Path.Combine(HttpRuntime.AppDomainAppPath, fixedPath);
-                    }
-                    else if (MappedOrRelativePath.StartsWith("/"))
-                    {
-                        fixedPath = MappedOrRelativePath.TrimStart('/');
-                        MappedFolderPath = Path.Combine(HttpRuntime.AppDomainAppPath, fixedPath);
-                    }
-                    else
-                    {
-                        MappedFolderPath = MappedOrRelativePath;
-                    }
-                    //Yes, the error is getting swallowed
-                }
-            }
-
-            return MappedFolderPath;
-        }
 
         /// <summary>
         /// Tries to get a mapped path of the provided path
@@ -831,42 +753,34 @@
         /// <param name="MappedOrRelativePath">The Path to look for</param>
         /// <param name="MappedFolderPath">The Mapped path, returned</param>
         /// <returns>False, if an exception occurred</returns>
-        public static bool TryGetMappedPath(string MappedOrRelativePath, out string MappedFolderPath)
+        public bool TryGetMappedPath(string MappedOrRelativePath, out string MappedFolderPath)
         {
             MappedFolderPath = "";
             if (MappedOrRelativePath != null)
             {
                 try
                 {
-                    if (HttpContext.Current != null)
-                    {
-                        MappedFolderPath = HttpContext.Current.Server.MapPath(MappedOrRelativePath);
-                    }
-                    else
-                    {
-                        MappedFolderPath = HostingEnvironment.MapPath(MappedOrRelativePath);
-                    }
+                    MappedFolderPath = _webHostEnvironment.MapPathWebRoot(MappedOrRelativePath);
                 }
                 catch (Exception ex)
                 {
-                    //Try AppDomain
-                    var fixedPath = "";
-                    if (MappedOrRelativePath.StartsWith("~"))
-                    {
-                        fixedPath = MappedOrRelativePath.Replace("~/", "");
-                        MappedFolderPath = Path.Combine(HttpRuntime.AppDomainAppPath, fixedPath);
-                    }
-                    else if (MappedOrRelativePath.StartsWith("/"))
-                    {
-                        fixedPath = MappedOrRelativePath.TrimStart('/');
-                        MappedFolderPath = Path.Combine(HttpRuntime.AppDomainAppPath, fixedPath);
-                    }
-                    else
-                    {
-                        MappedFolderPath = MappedOrRelativePath;
-                        return false;
-                    }
-
+                    ////Try AppDomain
+                    //var fixedPath = "";
+                    //if (MappedOrRelativePath.StartsWith("~"))
+                    //{
+                    //    fixedPath = MappedOrRelativePath.Replace("~/", "");
+                    //    MappedFolderPath = Path.Combine(HttpRuntime.AppDomainAppPath, fixedPath);
+                    //}
+                    //else if (MappedOrRelativePath.StartsWith("/"))
+                    //{
+                    //    fixedPath = MappedOrRelativePath.TrimStart('/');
+                    //    MappedFolderPath = Path.Combine(HttpRuntime.AppDomainAppPath, fixedPath);
+                    //}
+                    //else
+                    //{
+                    MappedFolderPath = MappedOrRelativePath;
+                    return false;
+                    //}
                 }
             }
 
@@ -879,7 +793,7 @@
         /// <param name="MappedOrRelativePath">The Path to look for</param>
         /// <param name="MappedFolderPath">The Mapped path, returned</param>
         /// <returns>StatusMessage with information about the operation</returns>
-        public static StatusMessage TryGetMappedPathWithStatus(string MappedOrRelativePath, out string MappedFolderPath)
+        public StatusMessage TryGetMappedPathWithStatus(string MappedOrRelativePath, out string MappedFolderPath)
         {
             var status = new StatusMessage();
             MappedFolderPath = "";
@@ -896,16 +810,8 @@
                     else
                     {
                         //Try to Map it
-                        if (HttpContext.Current != null)
-                        {
-                            MappedFolderPath = HttpContext.Current.Server.MapPath(MappedOrRelativePath);
-                            status.Success = true;
-                        }
-                        else
-                        {
-                            MappedFolderPath = HostingEnvironment.MapPath(MappedOrRelativePath);
-                            status.Success = true;
-                        }
+                        MappedFolderPath = _webHostEnvironment.MapPathWebRoot(MappedOrRelativePath);
+                        status.Success = true;
                     }
                 }
                 catch (Exception ex)
@@ -913,25 +819,25 @@
                     status.RelatedException = ex;
 
                     //Try AppDomain
-                    var fixedPath = "";
-                    if (MappedOrRelativePath.StartsWith("~"))
-                    {
-                        fixedPath = MappedOrRelativePath.Replace("~/", "");
-                        MappedFolderPath = Path.Combine(HttpRuntime.AppDomainAppPath, fixedPath);
-                        status.Success = true;
-                    }
-                    else if (MappedOrRelativePath.StartsWith("/"))
-                    {
-                        fixedPath = MappedOrRelativePath.TrimStart('/');
-                        MappedFolderPath = Path.Combine(HttpRuntime.AppDomainAppPath, fixedPath);
-                        status.Success = true;
-                    }
-                    else
-                    {
-                        MappedFolderPath = MappedOrRelativePath;
-                        status.Success = false;
-                        status.Message = $"An error occurred and MappedOrRelativePath '{MappedOrRelativePath}' doesn't start with '~' or '/'";
-                    }
+                    //var fixedPath = "";
+                    //if (MappedOrRelativePath.StartsWith("~"))
+                    //{
+                    //    fixedPath = MappedOrRelativePath.Replace("~/", "");
+                    //    MappedFolderPath = Path.Combine(HttpRuntime.AppDomainAppPath, fixedPath);
+                    //    status.Success = true;
+                    //}
+                    //else if (MappedOrRelativePath.StartsWith("/"))
+                    //{
+                    //    fixedPath = MappedOrRelativePath.TrimStart('/');
+                    //    MappedFolderPath = Path.Combine(HttpRuntime.AppDomainAppPath, fixedPath);
+                    //    status.Success = true;
+                    //}
+                    //else
+                    //{
+                    MappedFolderPath = MappedOrRelativePath;
+                    status.Success = false;
+                    status.Message = $"An error occurred and MappedOrRelativePath '{MappedOrRelativePath}' doesn't start with '~' or '/'";
+                    //}
                 }
             }
 

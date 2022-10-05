@@ -14,7 +14,7 @@
     /// </summary>
     public static class Urls
     {
-        private const string ThisClassName = "Dragonfly.NetHelpers.Urls";
+        //private const string ThisClassName = "Dragonfly.NetHelpers.Urls";
 
         /// <summary>
         /// Get the full Uri of the Request
@@ -99,21 +99,90 @@
 
         #region Get QueryString Values (From HttpRequest)
 
+        ///// <summary>
+        ///// Returns the Querystring value cast to T, or the Default, if missing
+        ///// </summary>
+        ///// <param name="CurrentRequest">In Razor, Use 'Context.Request'</param>
+        ///// <param name="QueryStringKey">Key name</param>
+        ///// <param name="DefaultIfMissing">A default value to return in case the Querystring value is missing</param>
+        ///// <returns></returns>
+        //public static T GetSafeQueryStringValue<T>(HttpRequest CurrentRequest, string QueryStringKey, T DefaultIfMissing)
+        //{
+        //    var qsVal = "";
+        //    var qsAll = CurrentRequest.Query;
+        //    var queryDict = qsAll.ToDictionary(n => n.Key, n => n.Value);
+
+        //    return GetSafeQueryStringValue<T>(queryDict, QueryStringKey, DefaultIfMissing);
+        //}
+
         /// <summary>
-        /// Returns the Querystring value cast to T, or the Default, if missing
+        /// Returns the Querystring value cast to T, or the Default, if missing 
         /// </summary>
         /// <param name="CurrentRequest">In Razor, Use 'Context.Request'</param>
         /// <param name="QueryStringKey">Key name</param>
         /// <param name="DefaultIfMissing">A default value to return in case the Querystring value is missing</param>
+        /// <param name="ReturnDefaultOnConversionFailure"></param>
+        /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static T GetSafeQueryStringValue<T>(HttpRequest CurrentRequest, string QueryStringKey, T DefaultIfMissing)
+        public static T GetSafeQueryStringValue<T>(HttpRequest CurrentRequest, string QueryStringKey, T DefaultIfMissing = default, bool ReturnDefaultOnConversionFailure = false)
         {
-            var qsVal = "";
-            var qsAll = CurrentRequest.Query;
-            var queryDict = qsAll.ToDictionary(n => n.Key, n => n.Value);
+            //         if (DefaultValue == null)
+            //{
+            //             DefaultValue = default;
+            //}
 
-            return GetSafeQueryStringValue<T>(queryDict, QueryStringKey, DefaultIfMissing);
+            var qsVals = CurrentRequest.Query[QueryStringKey];
+
+            if (!qsVals.Any())
+            {
+                return DefaultIfMissing;
+            }
+            else
+            {
+                var qsVal = qsVals.First();
+                if (string.IsNullOrEmpty(qsVal))
+                {
+                    return DefaultIfMissing;
+                }
+                else
+                {
+                    try
+                    {
+                        return (T)Convert.ChangeType(qsVal, typeof(T));
+                    }
+                    catch (Exception e1)
+                    {
+                        try
+                        {
+                            Type returnType = typeof(T);
+                            object convertedObj = (object)qsVal;
+
+                            //if (returnType == typeof(int))
+                            //{
+                            //    convertedObj = (object)Convert.ToInt32(qsVal);
+                            //}
+
+                            return (T)convertedObj;
+                        }
+                        catch (Exception e2)
+                        {
+                            if (ReturnDefaultOnConversionFailure)
+                            {
+                                return DefaultIfMissing;
+                            }
+                            else
+                            {
+                                throw;
+                            }
+
+                        }
+                    }
+                }
+            }
+
+            //return VdDictionary[Key] != null ? VdDictionary[Key] : DefaultNullValue;
         }
+
 
         /// <summary>
         /// Returns the Querystring value cast to T, or the Default, if missing

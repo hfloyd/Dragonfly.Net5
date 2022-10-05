@@ -659,7 +659,7 @@
 
             return stripped;
         }
-        
+
         /// <summary>
         /// Replaces double spaces with single spaces
         /// </summary>
@@ -884,11 +884,28 @@
 
             int iNextSpace = OriginalString.LastIndexOf(" ", length, StringComparison.Ordinal);
             var shortString = OriginalString.Substring(0, (iNextSpace > 0) ? iNextSpace : length).Trim();
-            return string.Format("{0}{1}", shortString, Suffix);
+            return $"{shortString}{Suffix}";
         }
+
+        /// <summary>
+        /// Appends a random string (a portion of a GUID) to the end of a provided prefix
+        /// </summary>
+        /// <param name="Prefix">Beginning of string</param>
+        /// <param name="RandomPortionLength">Length of the Random string portion (max 32)</param>
+        /// <param name="Divider">String to separate the Prefix and Random string</param>
+        /// <returns></returns>
+        public static string CreateUniqueName(string Prefix, int RandomPortionLength = 10, string Divider = "-")
+        {
+            var length = Math.Abs(RandomPortionLength) > 32 ? 32 : Math.Abs(RandomPortionLength);
+            var startIndex = length <= 10 ? 20 : (length <= 20 ? 10 : 0);
+            var guid = Guid.NewGuid();
+            var substring = guid.ToString().Replace("-", "").Substring(startIndex, length);
+
+            return $"{Prefix}{Divider}{substring}";
+        }
+
+
         #endregion
-
-
 
         #region Misc
 

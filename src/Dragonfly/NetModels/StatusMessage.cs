@@ -13,6 +13,7 @@
     public class StatusMessage
     {
         private Type _relatedObjectType;
+        private string _relatedObjectTypeName;
         private object _relatedObject;
 
         #region Properties
@@ -33,8 +34,14 @@
         public string Message { get; set; }
 
         /// <summary>
+        /// More detailed Status Message (multiple strings)
+        /// </summary>
+        public List<string> DetailedMessages { get; set; }
+
+        /// <summary>
         /// More detailed Status Message
         /// </summary>
+        [Obsolete("Consider using the 'DetailedMessages' property")]
         public string MessageDetails { get; set; }
 
         /// <summary>
@@ -92,6 +99,7 @@
                 if (value != null)
                 {
                     _relatedObjectType = value.GetType();
+                    _relatedObjectTypeName = _relatedObjectType.ToString();
                 }
             }
         }
@@ -99,12 +107,20 @@
         /// <summary>
         /// Type of the Related Object
         /// </summary>
-        public Type RelatedObjectType
+       // [JsonIgnore]
+        public Type RelatedObjectType()
         {
-            get => _relatedObjectType;
+           return _relatedObjectType;
         }
 
 
+        /// <summary>
+        /// Type name of the Related Object
+        /// </summary>
+        public string RelatedObjectTypeName
+        {
+            get => _relatedObjectTypeName;
+        }
 
         #endregion
 
@@ -113,19 +129,18 @@
 
         public StatusMessage()
         {
-            this.InnerStatuses = new List<StatusMessage>();
-            this.TimestampStart = DateTime.Now;
+            SetDefaults();
         }
 
         public StatusMessage(DateTime StartTimestamp)
         {
-            this.InnerStatuses = new List<StatusMessage>();
+            SetDefaults();
             this.TimestampStart = StartTimestamp;
         }
 
         public StatusMessage(bool WasSuccessful, DateTime? StartTimestamp = null)
         {
-            this.InnerStatuses = new List<StatusMessage>();
+            SetDefaults();
             this.Success = WasSuccessful;
 
             if (StartTimestamp != null)
@@ -141,7 +156,7 @@
 
         public StatusMessage(bool WasSuccessful, string Msg, DateTime? StartTimestamp = null)
         {
-            this.InnerStatuses = new List<StatusMessage>();
+            SetDefaults();
             this.Success = WasSuccessful;
             this.Message = Msg;
 
@@ -153,6 +168,13 @@
             {
                 this.TimestampStart = DateTime.Now;
             }
+        }
+
+        private void SetDefaults()
+        {
+            this.InnerStatuses = new List<StatusMessage>();
+            this.DetailedMessages = new List<string>();
+            this.TimestampStart = DateTime.Now;
         }
 
         #endregion
@@ -264,6 +286,10 @@
             {
                 sb.AppendLine(string.Format("{0}Message: {1}", indent, this.Message));
                 sb.AppendLine(this.MessageDetails);
+                foreach (var message in DetailedMessages)
+                {
+                    sb.AppendLine(message);
+                }
             }
 
             if (this.InnerStatuses.Any())
@@ -278,7 +304,7 @@
             return sb.ToString();
         }
 
-   
+
 
         #endregion
 

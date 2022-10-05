@@ -14,10 +14,10 @@
     <RepositoryUrl>https://github.com/hfloyd/Dragonfly.Net5</RepositoryUrl>
     <PackageId>Dragonfly.Net5</PackageId>
     <AssemblyName>Dragonfly.Net5</AssemblyName>
-    <Version>1.1.0</Version>
+    <Version>1.2.1</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
-    <PackageReleaseNotes>New ViewRenderService &amp; HttpResponseMessageResult added; StatusMessage updated</PackageReleaseNotes>
+    <PackageReleaseNotes>New FileHelperService </PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <BaseIntermediateOutputPath />
   </PropertyGroup>
@@ -27,7 +27,6 @@
     <None Remove="HttpHelpers\**" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="NetHelperServices\Files.cs" />
     <Compile Remove="NetHelpers\Cookies.cs" />
     <Compile Remove="NetHelpers\Info.cs" />
     <Compile Remove="NetHelpers\Json.cs" />
@@ -52,7 +51,7 @@
     <DocumentationFile></DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>bin\Debug\net5\Dragonfly.Net.xml</DocumentationFile>
+    <DocumentationFile></DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.37" PrivateAssets="All" />
