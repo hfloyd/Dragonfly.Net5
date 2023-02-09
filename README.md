@@ -7,9 +7,6 @@ A collection of .Net Helpers/Models created by [Heather Floyd](https://www.Heath
 
     PM > Install-Package Dragonfly.Net5
 
-#### NOTE: IN PROGRESS ####
-This is currently being ported from the .Net Framework version, 'Dragonfly.Net'. Some of those functions have been removed from the new version and others may or may not be re-implemented.
-
 ## Features & Usage : Models ###
 
 ### StatusMessage
@@ -43,7 +40,7 @@ An object used for collecting and reporting information about code operations - 
                 {
                     readStatus.Success = false;
                     readStatus.Message = $"GetLocalFilesInfo: Failure getting file '{fileInfo.FullName}'.";
-                    readStatus.RelatedException = e;
+                    readStatus.SetRelatedException(e);
                 }
                 returnStatus.InnerStatuses.Add(readStatus);
             }
