@@ -14,16 +14,28 @@
     {
         private const string ThisClassName = "Dragonfly.NetHelpers.Extensions";
 
-        //Custom Extension Methods
-
-        #region ======= IEnumerable<T> 
+		//Custom Extension Methods
 
         /// <summary>
-        /// Find the index of an item in the IEnumerable collection similar to List&lt;T&gt;.FindIndex()
+        /// Provides the same functionality as string.Join as an extension method
         /// </summary>
-        /// <param name="finder">The Item to locate</param>
-        /// <returns>Integer representing the Index position</returns>
-        public static int FindIndex<T>(this IEnumerable<T> list, Predicate<T> finder)
+        /// <param name="ListOfStrings"></param>
+        /// <param name="Delimiter"></param>
+        /// <returns></returns>
+		public static string ToDelimitedString(this IEnumerable<string> ListOfStrings, string Delimiter)
+		{
+			return string.Join(Delimiter, ListOfStrings);
+		}
+
+
+		#region ======= IEnumerable<T> 
+
+		/// <summary>
+		/// Find the index of an item in the IEnumerable collection similar to List&lt;T&gt;.FindIndex()
+		/// </summary>
+		/// <param name="finder">The Item to locate</param>
+		/// <returns>Integer representing the Index position</returns>
+		public static int FindIndex<T>(this IEnumerable<T> list, Predicate<T> finder)
         {
             return list.ToList().FindIndex(finder);
         }

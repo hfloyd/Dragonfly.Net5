@@ -183,7 +183,6 @@
             //return VdDictionary[Key] != null ? VdDictionary[Key] : DefaultNullValue;
         }
 
-
         /// <summary>
         /// Returns the Querystring value cast to T, or the Default, if missing
         /// </summary>
@@ -259,18 +258,87 @@
         }
 
 
-        #endregion
+		/// <summary>
+		/// Returns TRUE if the Querystring contains the key, and the key has a value 
+		/// </summary>
+		/// <param name="CurrentRequest">In Razor, Use 'Context.Request'</param>
+		/// <param name="QueryStringKey">Key name</param>
+			/// <returns></returns>
+		public static bool HasQueryStringValue(HttpRequest CurrentRequest, string QueryStringKey)
+		{
+			var qsVals = CurrentRequest.Query[QueryStringKey];
+
+			if (!qsVals.Any())
+			{
+				return false;
+			}
+			else
+			{
+				var qsVal = qsVals.First();
+				if (string.IsNullOrEmpty(qsVal))
+				{
+					return false;
+				}
+				else
+				{
+					return true;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Returns TRUE if the Querystring contains the key, and the key has a value 
+		/// </summary>
+		/// <param name="CurrentRequestUri">Uri with QueryString Data</param>
+		/// <param name="QueryStringKey">Key name</param>
+			/// <returns></returns>
+		public static bool HasQueryStringValue(Uri CurrentRequestUri, string QueryStringKey)
+		{
+			var qsAll = CurrentRequestUri.Query;
+			var queryDict = QueryHelpers.ParseQuery(qsAll);
+
+			return HasQueryStringValue(queryDict, QueryStringKey);
+		}
+
+		/// <summary>
+		/// Returns TRUE if the Querystring contains the key, and the key has a value 
+		/// </summary>
+		/// <param name="QueryDict">Querystring values dictionary. In Razor, Use 'Context.Request.Query'</param>
+		/// <param name="QueryStringKey">Key name</param>
+		/// <returns></returns>
+		public static bool HasQueryStringValue(Dictionary<string, StringValues> QueryDict, string QueryStringKey)
+		{
+			var qsVal = "";
+			
+			if (QueryDict.ContainsKey(QueryStringKey))
+			{
+				qsVal = QueryDict[QueryStringKey];
+			}
+
+			if (!string.IsNullOrEmpty(qsVal))
+			{
+				return true;
+			}
+			else
+			{
+				//No QS val matching Key
+				return false;
+			}
+		}
 
 
-        #region Get QueryString Values (OBSOLETE)
-        /// <summary>
-        /// Returns a string value (empty string, if missing)
-        /// </summary>
-        /// <param name="CurrentRequestUri">Uri with QueryString Data</param>
-        /// <param name="QueryStringKey">Key name</param>
-        /// <param name="DefaultIfMissing">Value to return if missing/empty</param>
-        /// <returns></returns>
-        [Obsolete("Use 'GetSafeQueryStringValue<string>()'")]
+		#endregion
+
+
+		#region Get QueryString Values (OBSOLETE)
+		/// <summary>
+		/// Returns a string value (empty string, if missing)
+		/// </summary>
+		/// <param name="CurrentRequestUri">Uri with QueryString Data</param>
+		/// <param name="QueryStringKey">Key name</param>
+		/// <param name="DefaultIfMissing">Value to return if missing/empty</param>
+		/// <returns></returns>
+		[Obsolete("Use 'GetSafeQueryStringValue<string>()'")]
         public static string GetSafeQueryString(Uri CurrentRequestUri, string QueryStringKey, string DefaultIfMissing = "")
         {
             var returnVal = DefaultIfMissing;

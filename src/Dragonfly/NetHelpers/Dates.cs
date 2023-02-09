@@ -60,8 +60,8 @@
                 // Less than one hour ago.
                 if (secDiff < 3600)
                 {
-                    return string.Format("{0} minutes ago",
-                        Math.Floor((double)secDiff / 60));
+                    var minutes = Math.Floor((double)secDiff / 60);
+                    return $"{minutes} minutes ago";
                 }
 
                 // Less than 2 hours ago.
@@ -73,8 +73,8 @@
                 // Less than one day ago.
                 if (secDiff < 86400)
                 {
-                    return string.Format("{0} hours ago",
-                        Math.Floor((double)secDiff / 3600));
+                    var hours = Math.Floor((double)secDiff / 3600);
+                    return $"{hours} hours ago";
                 }
             }
 
@@ -85,17 +85,24 @@
             }
             if (dayDiff < 7)
             {
-                return string.Format("{0} days ago", dayDiff);
+                return $"{dayDiff} days ago";
             }
             if (dayDiff < 31)
             {
-                return string.Format("{0} weeks ago",
-                    Math.Ceiling((double)dayDiff / 7));
+                var weeks = Math.Ceiling((double)dayDiff / 7);
+                if (weeks == 1)
+                {
+                    return $"{weeks} week ago";
+                }
+                else
+                {
+                    return $"{weeks} weeks ago";
+                }
             }
             if (dayDiff < 366)
             {
-                return string.Format("{0} months ago",
-                    Math.Ceiling((double)dayDiff / 30));
+                var months = Math.Ceiling((double)dayDiff / 30);
+                return $"{months} months ago";
             }
             if (dayDiff > 365 & dayDiff < 730)
             {
@@ -103,11 +110,103 @@
                 //return string.Format("{0} years ago",
                 //Math.Ceiling((double)dayDiff / 365));
             }
-            //if (dayDiff > 365 & dayDiff < 730)
-            //{
-            return string.Format("More than {0} years ago",
-                Math.Ceiling((double)dayDiff / 365));
-            //}
+            else
+            {
+                var years = Math.Ceiling((double)dayDiff / 365);
+                return $"More than {years} years ago";
+            }
+
+        }
+
+        public static string AgeFormat(this DateTime Date)
+        {
+            // Get time span elapsed since the date.
+            TimeSpan s = DateTime.Now.Subtract(Date);
+
+            // Get total number of days elapsed.
+            int dayDiff = (int)s.TotalDays;
+
+            // Get total number of seconds elapsed.
+            int secDiff = (int)s.TotalSeconds;
+
+            // Don't allow out of range values.
+            if (dayDiff < 0)
+            {
+                return "";
+            }
+
+            // Handle same-day times.
+            if (dayDiff == 0)
+            {
+                // Less than one minute ago.
+                if (secDiff < 60)
+                {
+                    return "1 minute";
+                }
+
+                // Less than 2 minutes ago.
+                if (secDiff < 120)
+                {
+                    return "1 minute";
+                }
+
+                // Less than one hour ago.
+                if (secDiff < 3600)
+                {
+                    var minutes = Math.Floor((double)secDiff / 60);
+                    return $"{minutes} minutes";
+                }
+
+                // Less than 2 hours ago.
+                if (secDiff < 7200)
+                {
+                    return "1 hour";
+                }
+
+                // Less than one day ago.
+                if (secDiff < 86400)
+                {
+                    var hours = Math.Floor((double)secDiff / 3600);
+                    return $"{hours} hours";
+                }
+            }
+
+            // Handle previous days.
+            if (dayDiff == 1)
+            {
+                return "1 day";
+            }
+            if (dayDiff < 7)
+            {
+                return $"{dayDiff} days";
+            }
+            if (dayDiff < 31)
+            {
+                var weeks = Math.Ceiling((double)dayDiff / 7);
+                if (weeks == 1)
+                {
+                    return $"{weeks} week";
+                }
+                else
+                {
+                    return $"{weeks} weeks";
+                }
+            }
+            if (dayDiff < 366)
+            {
+                var months = Math.Ceiling((double)dayDiff / 30);
+                return $"{months} months";
+            }
+            if (dayDiff > 365 & dayDiff < 730)
+            {
+                return "1 year";
+            }
+            else
+            {
+                var years = Math.Ceiling((double)dayDiff / 365);
+                return $"{years} years";
+            }
+
         }
 
         /// <summary>
@@ -398,12 +497,12 @@
             bool IncludeCurrent = false)
         {
             var qtrs = new List<CalendarQuarter>();
-           
+
             CalendarQuarter quarter;
             //var lastQuarterYear = 0;
 
             var currentQuarter = new CalendarQuarter(Date);
-            
+
             if (IncludeCurrent)
             {
                 quarter = currentQuarter;
@@ -439,7 +538,7 @@
             var qtrs = new List<CalendarQuarter>();
 
             var firstQuarter = new CalendarQuarter(StartDate);
-            
+
             var lastQuarter = new CalendarQuarter(EndDate);
 
             var startDate = firstQuarter.StartDate;
@@ -453,8 +552,8 @@
             {
                 quarter = quarter.GetPriorQuarter();
                 qtrs.Add(quarter);
-            } while (quarter.StartDate> startDate);
-            
+            } while (quarter.StartDate > startDate);
+
             qtrs.Add(firstQuarter);
 
             return qtrs;

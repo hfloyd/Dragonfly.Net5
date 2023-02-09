@@ -8,18 +8,22 @@
     <Authors>Heather Floyd</Authors>
     <Company></Company>
     <Product>Dragonfly</Product>
-    <Description>A collection of .Net Helpers &amp; Models (Targeted to .Net 5)</Description>
+    <Description>A collection of .Net Helpers &amp; Models (Targeted to .Net 5, compatible with .Net 6)</Description>
     <PackageLicenseUrl></PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/hfloyd/Dragonfly.Net5</PackageProjectUrl>
     <RepositoryUrl>https://github.com/hfloyd/Dragonfly.Net5</RepositoryUrl>
     <PackageId>Dragonfly.Net5</PackageId>
     <AssemblyName>Dragonfly.Net5</AssemblyName>
-    <Version>1.2.1</Version>
+    <Version>1.5.1</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
-    <PackageReleaseNotes>New FileHelperService </PackageReleaseNotes>
+    <PackageReleaseNotes>Updates</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <BaseIntermediateOutputPath />
+    <PackageIcon>Dragonfly-NetHelpers-128.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Title>Dragonfly .Net 5 Helpers</Title>
+    <IncludeSymbols>False</IncludeSymbols>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="HttpHelpers\**" />
@@ -59,9 +63,17 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\Dragonfly-NetHelpers-128.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
     <None Include="..\..\LICENSE.md">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
+    </None>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
 
